@@ -49,6 +49,40 @@ loginBtn.addEventListener("click", async () => {
   try {
     await signInWithEmailAndPassword(auth, email, pass);
     console.log("Logueado OK");
+    // -------- AQUI --------
+    const userEmail = auth.currentUser.email.replace(".", "_");
+    const dispositivosRef = ref(database, "dispositivos");
+    get(dispositivosRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        const dispositivos = snapshot.val();
+        let found = false;
+        for (let id in dispositivos) {
+          const data = dispositivos[id];
+          if (
+            data.admin === userEmail ||
+            (data.usuarios && data.usuarios[userEmail])
+          ) {
+            found = true;
+            console.log("Dispositivo vinculado:", id);
+            document.getElementById("nombreDispositivo").textContent =
+              data.nombreDispositivo || id;
+            selectedDeviceID = id;
+            document.getElementById("panelSection").style.display = "block";
+            document.getElementById("loginSection").style.display = "none";
+          }
+        }
+        if (!found) {
+          // Si no tiene dispositivos, pedirle asociar uno
+          document.getElementById("deviceSection").style.display = "block";
+          document.getElementById("loginSection").style.display = "none";
+        }
+      } else {
+        // si no hay ningún dispositivo en la db
+        document.getElementById("deviceSection").style.display = "block";
+        document.getElementById("loginSection").style.display = "none";
+      }
+    });
+
   } catch (e) {
     alert(e.message);
   }
