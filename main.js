@@ -4,13 +4,13 @@ import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, on
 import { getDatabase, ref, get, set, onValue, child } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://TU_PROJECT_ID.firebaseio.com",
-  projectId: "TU_PROJECT_ID",
-  storageBucket: "TU_PROJECT_ID.appspot.com",
+  apiKey: "AIzaSyB4OFajtU-bKi7wuN5B1N_1x71hDo4nf8U",
+  authDomain: "alarmaswof.firebaseapp.com",
+  databaseURL: "https://alarmaswof-default-rtdb.firebaseio.com",
+  projectId: "alarmaswof",
+  storageBucket: "alarmaswof.appspot.com",
   messagingSenderId: "xxx",
-  appId: "xxx"
+  appId: "1:xxx:web:xxx"
 };
 
 // inicializa
