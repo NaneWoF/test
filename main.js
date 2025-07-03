@@ -218,14 +218,26 @@ btnProgramar.addEventListener("click", async () => {
     alert("Solo administrador puede programar transmisores");
     return;
   }
+
+  // activar modo escucha en Firebase
+  await set(ref(db, `dispositivos/${currentDeviceID}/modoEscucha`), true);
+
   listaSection.style.display = "none";
   formSection.style.display = "block";
-  // espera a que el ESP32 mande el código capturado a Firebase
-  const snap = await get(child(ref(db), `dispositivos/${currentDeviceID}/codigoCapturado`));
-  if (snap.exists() && snap.val() > 0) {
-    document.getElementById("codigoDetectado").textContent = snap.val();
-  }
+
+  alert("Se activó el modo escucha, presione el transmisor RF ahora.");
+
+  // opcional: refrescar cada 2s para ver si capturó un código
+  const interval = setInterval(async () => {
+    const snap = await get(child(ref(db), `dispositivos/${currentDeviceID}/codigoCapturado`));
+    if (snap.exists() && snap.val() > 0) {
+      clearInterval(interval);
+      document.getElementById("codigoDetectado").textContent = snap.val();
+      alert(`Código capturado: ${snap.val()}`);
+    }
+  }, 2000);
 });
+
 
 // guardar transmisor
 guardarBtn.addEventListener("click", async () => {
