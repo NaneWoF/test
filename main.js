@@ -133,55 +133,64 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// vincular
+// Vincular dispositivo
 vincularBtn.addEventListener("click", async () => {
   const deviceID = document.getElementById("deviceID").value.trim();
   const nombreDispositivo = document.getElementById("deviceName").value.trim();
+  const user = auth.currentUser;
 
-  if (!/^[A-Za-z0-9]{6,20}$/.test(deviceID)) {
-    alert("Device ID no válido (solo letras/números, 6-20 caracteres)");
-    return;
-  }
-  if (nombreDispositivo.length < 3) {
-    alert("Nombre de dispositivo muy corto");
+  if (!user) {
+    alert("Debes estar logueado.");
     return;
   }
 
-  const userKey = currentUser.email.replaceAll(".", "_");
+  // transformar el correo a clave segura
+  const safeEmail = user.email.replace(/\./g, "_");
 
-  const pathLista = `listaDeviceIDs/${deviceID}`;
-  const snap = await get(child(ref(db), pathLista));
-  if (snap.exists() && snap.val() === true) {
-    // OK
-    const pathDispositivo = `dispositivos/${deviceID}`;
-    const dispoSnap = await get(child(ref(db), pathDispositivo));
-    if (!dispoSnap.exists()) {
-      // crear rama
-      const initData = {
-        admin: userKey,
-        clave: "1234",
-        modoEscucha: false,
-        codigoCapturado: 0,
-        relay1: false,
-        nombreDispositivo: nombreDispositivo,
-        salida: {
-          estado: false,
-          nombre: "",
-          direccion: "",
-          timestamp: 0
-        },
-        transmisores: [],
-        usuarios: { [userKey]: true }
-      };
-      await set(ref(db, pathDispositivo), initData);
-      alert("✅ Dispositivo vinculado y registrado");
+  try {
+    const listaPath = `listaDeviceIDs/${deviceID}`;
+    const snapshot = await get(ref(database, listaPath));
+
+    if (snapshot.exists() && snapshot.val() === true) {
+      const pathDispositivo = `dispositivos/${deviceID}`;
+      const dispositivoSnapshot = await get(ref(database, pathDispositivo));
+
+      if (!dispositivoSnapshot.exists()) {
+        // el dispositivo no existe, inicializar
+        const initData = {
+          admin: safeEmail,
+          clave: "1234",
+          modoEscucha: false,
+          codigoCapturado: 0,
+          relay1: false,
+          nombreDispositivo: nombreDispositivo,
+          salida: {
+            estado: false,
+            nombre: "",
+            direccion: "",
+            timestamp: 0,
+          },
+          transmisores: [],
+          usuarios: {
+            [safeEmail]: true
+          },
+        };
+        await set(ref(database, pathDispositivo), initData);
+        console.log("🌟 Dispositivo inicializado en la DB.");
+      }
+
+      panelSection.style.display = "block";
+      deviceSection.style.display = "none";
+      document.getElementById("nombreDispositivo").innerText = nombreDispositivo;
+    } else {
+      alert("DeviceID no válido o no registrado.");
     }
-    currentDeviceID = deviceID;
-    cargarPanel();
-  } else {
-    alert("DeviceID no encontrado en lista de autorizados");
+  } catch (error) {
+    console.error(error);
+    alert("Error vinculando el dispositivo.");
   }
 });
+
 
 // cargar panel
 async function cargarPanel() {
